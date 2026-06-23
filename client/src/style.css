@@ -1,0 +1,31 @@
+.progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+}
+
+.progress-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.08);
+  stroke-width: 6;
+}
+
+.progress-bar {
+  fill: none;
+  stroke: #7c3aed;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: 0.3s linear;
+}
+
+.adBtn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #111827;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+}
