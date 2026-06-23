@@ -1,61 +1,17 @@
+const express = require("express");
+const cors = require("cors");
 require("dotenv").config();
 
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-
 const app = express();
-const server = http.createServer(app);
-
-// PORT من .env أو 3000
-const PORT = process.env.SOCKET_PORT || 3000;
-
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
 
 app.use(cors());
+app.use(express.json());
 
-const players = {};
+// ربط routes
+app.use("/api", require("./routes"));
 
-io.on("connection", (socket) => {
+const PORT = process.env.PORT || 5000;
 
-  players[socket.id] = {
-    coins: 0,
-    started: false,
-    power: 1,
-    last: Date.now()
-  };
-
-  socket.emit("init", players[socket.id]);
-
-  socket.on("startMining", () => {
-    const p = players[socket.id];
-    if (!p || p.started) return;
-
-    p.started = true;
-    p.last = Date.now();
-  });
-
-  socket.on("tap", () => {
-    const p = players[socket.id];
-    if (!p) return;
-
-    p.coins += 0.02 * p.power;
-
-    socket.emit("state", {
-      coins: p.coins,
-      started: p.started
-    });
-  });
-
-  socket.on("disconnect", () => {
-    delete players[socket.id];
-  });
-
-});
-
-server.listen(PORT, () => {
-  console.log("SERVER RUNNING ON PORT:", PORT);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
