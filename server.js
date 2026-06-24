@@ -1,17 +1,28 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+const http = require('http');
+const cors = require('cors');
+const fs = require('fs');
+require('dotenv').config();
 
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-// ربط routes
-app.use("/api", require("./routes"));
+const server = http.createServer(( req, res ) => {
+    if (req.method === 'GET' && req.url === '/') {
+        // مثال بسيط: إرسال صفحة HTML كاستجابة
+        fs.readFile('./client/public/index.html', (err, data) => {
+            if (err) {
+                res.writeHead(500, {'Content-Type': 'text/plain'});
+                res.end('Error loading page');
+            } else {
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                res.end(data);
+            }
+        });
+    } else {
+        res.writeHead(404, {'Content-Type': 'text/plain'});
+        res.end('Not Found');
+    }
+});
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
