@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Pro - Multi Operations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #0b0f1a;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .app {
+            max-width: 420px;
+            width: 100%;
+            background: #0b0f1a;
+            border-radius: 28px;
+            padding: 16px 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+        .card {
+            background: #111827;
+            padding: 18px 16px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+            border: 1px solid #1f2937;
+        }
+        .card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+        .balance-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #balance {
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        #netText {
+            background: #1e293b;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+        }
+        .label-small {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        input,
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            margin-top: 8px;
+            border-radius: 16px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        input:focus,
+        select:focus {
+            border-color: #f97316;
+        }
+        input::placeholder {
+            color: #475569;
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 12px;
+        }
+        .action-grid button {
+            background: #1e293b;
+            border: none;
+            padding: 10px 0;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 0.65rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            border: 1px solid #2d3a4f;
+            transition: 0.2s;
+        }
+        .action-grid button span {
+            font-size: 1.2rem;
+        }
+        .action-grid button:hover {
+            background: #334155;
+            transform: scale(0.97);
+        }
+        .action-grid .send-btn {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+        .action-grid .receive-btn {
+            background: #16a34a;
+            border-color: #16a34a;
+        }
+        .action-grid .withdraw-btn {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+        .action-grid .deposit-btn {
+            background: #f0b90b;
+            border-color: #f0b90b;
+            color: #0b0f1a;
+        }
+
+        /* ===== OPERATION PANELS ===== */
+        .operation-panel {
+            display: none;
+            margin-top: 12px;
+            padding: 16px;
+            background: #0f172a;
+            border-radius: 16px;
+            border: 1px solid #1e293b;
+        }
+        .operation-panel.show {
+            display: block;
+        }
+        .operation-panel label {
+            display: block;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 10px;
+        }
+        .operation-panel .confirm-btn {
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 700;
+            margin-top: 14px;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .operation-panel .confirm-btn:hover {
+            transform: scale(0.98);
+        }
+
+        /* ===== WALLET GRID ===== */
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .wallet-item {
+            background: #0b0f1a;
+            border: 2px solid #1e293b;
+            border-radius: 12px;
+            padding: 10px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .wallet-item:hover {
+            border-color: #f97316;
+            background: #1a1f2e;
+            transform: translateY(-2px);
+        }
+       .wallet-item .icon-wrap{
+    box-shadow:
+        inset 0 0 25px rgba(0,0,0,.9),
+        inset 0 0 50px rgba(0,0,0,.8);
+}
+.wallet-item .icon-wrap {
+    width: 100%;
+    height: 60px;
+    background: #000;
+    border-radius: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: inset 0 0 30px rgba(0,0,0,.9);
+}
+
+
+
+
+.wallet-item .icon-wrap img {
+    max-width: 42px;
+    max-height: 42px;
+    object-fit: contain;
+}
+        .wallet-item .name {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+        .wallet-item.active .name {
+            color: #f0b90b;
+        }
+
+        .wallet-input-box {
+            background: #0b0f1a;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid #1e293b;
+            margin-top: 6px;
+        }
+        .wallet-input-box input {
+            margin-top: 0;
+            padding: 10px 12px;
+            background: transparent;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            color: #f0b90b;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+        .wallet-input-box input:focus {
+            border-color: #f0b90b;
+        }
+        .wallet-input-box input::placeholder {
+            color: #475569;
+        }
+        .saved-address-hint {
+            font-size: 0.6rem;
+            color: #16a34a;
+            margin-top: 4px;
+            display: none;
+        }
+        .saved-address-hint.show {
+            display: block;
+        }
+
+        .network-selector {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        .network-selector button {
+            flex: 1;
+            min-width: 45px;
+            background: #1f2937;
+            border: none;
+            padding: 6px 4px;
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 0.6rem;
+            cursor: pointer;
+        }
+        .network-selector button.active {
+            background: #f0b90b;
+            color: #0b0f1a;
+        }
+
+        .history-box {
+            margin-top: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .item {
+            background: #0f172a;
+            padding: 12px 14px;
+            margin-top: 6px;
+            border-radius: 14px;
+            font-size: 0.8rem;
+            border-right: 3px solid #f97316;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .item .time {
+            color: #64748b;
+            font-size: 0.65rem;
+        }
+        .item .status-badge {
+            font-size: 0.6rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+            background: #f97316;
+            color: #0b0f1a;
+        }
+        .item .status-badge.success {
+            background: #16a34a;
+        }
+        .item .status-badge.pending {
+            background: #f0b90b;
+        }
+        .item .status-badge.failed {
+            background: #dc2626;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            border: 1px solid #334155;
+            white-space: nowrap;
+            z-index: 999;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .btn-toggle {
+            background: #1f2937;
+            border: none;
+            padding: 8px 0;
+            border-radius: 30px;
+            color: #cbd5e1;
+            font-weight: 500;
+            margin-top: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .fee-note {
+            display: block;
+            margin-top: 8px;
+            color: #64748b;
+            font-size: 0.65rem;
+            text-align: center;
+        }
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            color: #64748b;
+            margin-top: 6px;
+        }
+        .selected-wallet-display {
+            background: #0f172a;
+            padding: 6px 12px;
+            border-radius: 10px;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #f0b90b;
+            text-align: center;
+            border: 1px solid #1e293b;
+        }
+        .panel-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #f0b90b;
+            margin-bottom: 8px;
+        }
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .row-2col input,
+        .row-2col select {
+            margin-top: 4px;
+        }
+
+        /* ===== RECEIVE PANEL - TRUST WALLET STYLE ===== */
+        .receive-trust-panel {
+            display: none;
+            margin-top: 12px;
+            padding: 20px 16px;
+            background: #0f172a;
+            border-radius: 20px;
+            border: 1px solid #1e293b;
+        }
+        .receive-trust-panel.show {
+            display: block;
+        }
+
+        .warning-box {
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .warning-box .icon {
+            color: #dc2626;
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+        .warning-box .text {
+            font-size: 0.75rem;
+            color: #fca5a5;
+            line-height: 1.5;
+        }
+        .warning-box .text strong {
+            color: #ffffff;
+        }
+
+        .coin-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .coin-selector button {
+            background: #1e293b;
+            border: 2px solid #1e293b;
+            padding: 8px 16px;
+            border-radius: 30px;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 1;
+            min-width: 60px;
+        }
+        .coin-selector button.active {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #ffffff;
+        }
+        .coin-selector button:hover {
+            border-color: #16a34a;
+        }
+
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .qr-box {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 16px;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qr-box svg {
+            width: 120px;
+            height: 120px;
+        }
+
+        .address-box {
+            background: #0b0f1a;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .address-box .label {
+            font-size: 0.65rem;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        .address-box .address {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #f0b90b;
+            word-break: break-all;
+            line-height: 1.6;
+            user-select: all;
+        }
+
+        .receive-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .receive-actions button {
+            background: #1e293b;
+            border: 1px solid #2d3a4f;
+            padding: 10px 0;
+            border-radius: 30px;
+            color: #e2e8f0;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .receive-actions button:hover {
+            background: #334155;
+            transform: scale(0.97);
+        }
+        .receive-actions button .icon {
+            font-size: 1rem;
+        }
+
+        .exchange-box {
+            background: #0b0f1a;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 12px;
+        }
+        .exchange-box:hover {
+            border-color: #16a34a;
+        }
+        .exchange-box .left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .exchange-box .left .icon {
+            font-size: 1.4rem;
+        }
+        .exchange-box .left .text {
+            font-size: 0.8rem;
+            color: #e2e8f0;
+        }
+        .exchange-box .left .text small {
+            display: block;
+            font-size: 0.65rem;
+            color: #64748b;
+        }
+        .exchange-box .arrow {
+            color: #64748b;
+            font-size: 1.2rem;
+        }
+
+        ::-webkit-scrollbar {
+            width: 3px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f97316;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+
+        <!-- BALANCE -->
+        <div class="card">
+            <div class="balance-wrap">
+                <div>
+                    <h3 style="margin-bottom: 2px;">💰 الرصيد</h3>
+                    <h1 id="balance">2500.00</h1>
+                </div>
+                <div>
+                    <span id="netText">USDT</span>
+                </div>
+            </div>
+            <div class="label-small">🔒 محفظة نشطة</div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="card">
+            <h3>⚡ العمليات</h3>
+
+            <div class="action-grid">
+                <button class="send-btn" onclick="showPanel('send')">
+                    <span>↗️</span> تحويل
+                </button>
+                <button class="receive-btn" onclick="showPanel('receive')">
+                    <span>📥</span> استلام
+                </button>
+                <button class="withdraw-btn" onclick="showPanel('withdraw')">
+                    <span>💸</span> سحب
+                </button>
+                <button class="deposit-btn" onclick="showPanel('deposit')">
+                    <span>🏦</span> إيداع
+                </button>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PANEL: SEND (تحويل) -->
+            <!-- ============================================================ -->
+            <div id="sendPanel" class="operation-panel">
+                <div class="panel-title">↗️ تحويل</div>
+
+                <label>🔗 عنوان المحفظة المستلم</label>
+                <input id="sendTo" placeholder="أدخل عنوان المحفظة">
+
+                <div class="row-2col">
+                    <div>
+                        <label>💵 المبلغ</label>
+                        <input id="sendAmount" type="number" placeholder="المبلغ">
+                    </div>
+                    <div>
+                        <label>🪙 العملة</label>
+                        <select id="sendCoin">
+                            <option>USDT</option>
+                            <option>BTC</option>
+                            <option>ETH</option>
+                            <option>BNB</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label>🔒 المحفظة المرسلة</label>
+                <div class="wallet-grid" id="sendWalletGrid">
+                    <!-- MetaMask -->
+                    <div class="wallet-item active" onclick="selectWalletSend(this, 'MetaMask')">
+                        <div class="icon-wrap">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="ميتا ماسك" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%23e2761b%22/%3E%3C/svg%3E'">
+                        </div>
+                        <span class="name">ميتا ماسك</span>
+                    </div>
+                    <!-- Binance -->
+                    <div class="wallet-item" onclick="selectWalletSend(this, 'Binance')">
+                        <div class="icon-wrap">
+<img src="https://g.top4top.io/p_38279t77h3.png"
+     alt="بينانس"
+     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%23f0b90b%22/%3E%3C/svg%3E'">
+                        </div>
+                        <span class="name">بينانس</span>
+                    </div>
+                    <!-- Trust Wallet -->
+                    <div class="wallet-item" onclick="selectWalletSend(this, 'Trust Wallet')">
+                        <div class="icon-wrap">
+<div class="icon-wrap">
+    <img src="https://f.top4top.io/p_382703m6q2.png"
+         alt="تراست والت"
+         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%233375bb%22/%3E%3C/svg%3E'">
+</div>
+                        </div>
+                        <span class="name">تراست والت</span>
+                    </div>
+                </div>
+
+                <label>🌐 الشبكة</label>
+                <div class="network-selector" id="sendNetworkSelector">
+                    <button class="active" onclick="selectSendNetwork(this, 'ERC20')">ERC20</button>
+                    <button onclick="selectSendNetwork(this, 'TRC20')">TRC20</button>
+                    <button onclick="selectSendNetwork(this, 'BEP20')">BEP20</button>
+                    <button onclick="selectSendNetwork(this, 'SOL')">SOL</button>
+                </div>
+
+                <button class="confirm-btn" style="background:#2563eb;" onclick="processSend()">
+                    ✅ تأكيد التحويل
+                </button>
+                <small style="display:block;margin-top:6px;color:#64748b;font-size:0.65rem;text-align:center;">
+                    🔹 رسوم التحويل: 1%
+                </small>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PANEL: RECEIVE (استلام) - TRUST WALLET STYLE -->
+            <!-- ============================================================ -->
+            <div id="receivePanel" class="receive-trust-panel">
+                <div class="panel-title">📥 استلام</div>
+
+                <!-- Warning -->
+                <div class="warning-box">
+                    <span class="icon">⚠️</span>
+                    <div class="text">
+                        <strong>تنبيه مهم:</strong> أرسل أصول <strong id="warningCoin">BTC</strong> فقط إلى هذا العنوان وإلا ستفقد الأصول الأخرى إلى الأبد.
+                    </div>
+                </div>
+
+                <!-- Coin Selector -->
+                <div class="coin-selector" id="receiveCoinSelector">
+                    <button class="active" onclick="selectReceiveCoin(this, 'BTC')">BTC</button>
+                    <button onclick="selectReceiveCoin(this, 'ETH')">ETH</button>
+                    <button onclick="selectReceiveCoin(this, 'USDT')">USDT</button>
+                    <button onclick="selectReceiveCoin(this, 'BNB')">BNB</button>
+                    <button onclick="selectReceiveCoin(this, 'SOL')">SOL</button>
+                </div>
+
+                <!-- QR Code -->
+                <div class="qr-container">
+                    <div class="qr-box">
+                        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="120" height="120" fill="white"/>
+                            <g fill="#0b0f1a">
+                                <rect x="20" y="20" width="12" height="12"/>
+                                <rect x="20" y="36" width="12" height="12"/>
+                                <rect x="20" y="52" width="12" height="12"/>
+                                <rect x="20" y="68" width="12" height="12"/>
+                                <rect x="36" y="20" width="12" height="12"/>
+                                <rect x="52" y="20" width="12" height="12"/>
+                                <rect x="68" y="20" width="12" height="12"/>
+                                <rect x="36" y="36" width="12" height="12"/>
+                                <rect x="52" y="36" width="12" height="12"/>
+                                <rect x="36" y="52" width="12" height="12"/>
+                                <rect x="68" y="52" width="12" height="12"/>
+                                <rect x="20" y="84" width="12" height="12"/>
+                                <rect x="36" y="84" width="12" height="12"/>
+                                <rect x="52" y="84" width="12" height="12"/>
+                                <rect x="68" y="84" width="12" height="12"/>
+                                <rect x="84" y="20" width="12" height="12"/>
+                                <rect x="84" y="36" width="12" height="12"/>
+                                <rect x="84" y="52" width="12" height="12"/>
+                                <rect x="84" y="68" width="12" height="12"/>
+                                <rect x="84" y="84" width="12" height="12"/>
+                                <rect x="52" y="68" width="12" height="12"/>
+                                <rect x="68" y="36" width="12" height="12"/>
+                                <rect x="36" y="68" width="12" height="12"/>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="address-box">
+                    <div class="label">📤 عنوان استلام <span id="receiveCoinLabel">BTC</span></div>
+                    <div class="address" id="receiveAddressDisplay">
+                        bc1qlmfcvsnlje0cv882g5w249hl9wfo0hj0apg6yqc
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="receive-actions">
+                    <button onclick="shareAddress()">
+                        <span class="icon">📤</span> مشاركة
+                    </button>
+                    <button onclick="showToast('💰 أدخل المبلغ في الحقل أدناه')">
+                        <span class="icon">💰</span> تحديد المبلغ
+                    </button>
+                    <button onclick="copyReceiveAddress()">
+                        <span class="icon">📋</span> نسخ
+                    </button>
+                </div>
+
+                <!-- Amount Input -->
+                <div style="margin-top:12px;">
+                    <label style="display:block;font-size:0.85rem;color:#94a3b8;margin-bottom:4px;">💰 المبلغ</label>
+                    <input id="receiveAmountInput" type="number" placeholder="أدخل المبلغ" 
+                           style="width:100%;padding:12px 14px;border-radius:16px;border:1px solid #1e293b;background:#0b0f1a;color:white;font-size:0.95rem;outline:none;">
+                    <button onclick="confirmReceiveAmount()" 
+                            style="width:100%;padding:12px;margin-top:8px;border:none;border-radius:40px;background:#16a34a;color:white;font-weight:700;cursor:pointer;">
+                        ✅ تأكيد الاستلام
+                    </button>
+                </div>
+
+                <!-- From Exchange -->
+                <div class="exchange-box" onclick="fromExchange()">
+                    <div class="left">
+                        <span class="icon">🏦</span>
+                        <div class="text">
+                            الإيداع من منصة تداول
+                            <small>بواسطة تحويل مباشر من حسابك</small>
+                        </div>
+                    </div>
+                    <span class="arrow">›</span>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PANEL: WITHDRAW (سحب) -->
+            <!-- ============================================================ -->
+            <div id="withdrawPanel" class="operation-panel">
+                <div class="panel-title">💸 سحب</div>
+
+                <label>🔗 عنوان المحفظة المستلم</label>
+                <input id="withdrawTo" placeholder="أدخل عنوان المحفظة">
+
+                <div class="row-2col">
+                    <div>
+                        <label>💵 المبلغ</label>
+                        <input id="withdrawAmount" type="number" placeholder="المبلغ">
+                    </div>
+                    <div>
+                        <label>🪙 العملة</label>
+                        <select id="withdrawCoin">
+                            <option>USDT</option>
+                            <option>BTC</option>
+                            <option>ETH</option>
+                            <option>BNB</option>
+                        </select>
+                    </div>
+                </div>
+                
+                
+                
+                
+
+                <label>🔒 المحفظة المسحوبة منها</label>
+                <div class="wallet-grid" id="withdrawWalletGrid">
+                    <div class="wallet-item active" onclick="selectWalletWithdraw(this, 'MetaMask')">
+                        <div class="icon-wrap">
+           <div class="icon-wrap">
+    <img src="https://f.top4top.io/p_3826geukh1.png"
+     alt="ميتا ماسك"
+     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%23e2761b%22/%3E%3C/svg%3E'">
+                    </div>    
+                        </div>
+                        <span class="name">ميتا ماسك</span>
+                        
+                    </div>
+                    <div class="wallet-item" onclick="selectWalletWithdraw(this, 'Binance')">
+                        <div class="icon-wrap">
+                           <img src="https://trustwallet.com/assets/images/favicon.png"
+     alt="تراست والت"
+     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%233375bb%22/%3E%3C/svg%3E'; this.onerror=null; this.src='https://g.top4top.io/p_38279t77h3.png'">
+                        </div>
+                        <span class="name">بينانس</span>
+                    </div>
+                    <div class="wallet-item" onclick="selectWalletWithdraw(this, 'Trust Wallet')">
+                        <div class="icon-wrap">
+                            <img src="https://trustwallet.com/assets/images/favicon.png"
+     alt="تراست والت"
+     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%233375bb%22/%3E%3C/svg%3E'; this.onerror=null; this.src='https://f.top4top.io/p_382703m6q2.png'">
+                        </div>
+                        <span class="name">تراست والت</span>
+                    </div>
+                </div>
+                
+                
+                
+                
+                
+
+                <label>🌐 الشبكة</label>
+                <div class="network-selector" id="withdrawNetworkSelector">
+                    <button class="active" onclick="selectWithdrawNetwork(this, 'ERC20')">ERC20</button>
+                    <button onclick="selectWithdrawNetwork(this, 'TRC20')">TRC20</button>
+                    <button onclick="selectWithdrawNetwork(this, 'BEP20')">BEP20</button>
+                    <button onclick="selectWithdrawNetwork(this, 'SOL')">SOL</button>
+                </div>
+
+                <button class="confirm-btn" style="background:#dc2626;" onclick="processWithdraw()">
+                    ✅ تأكيد السحب
+                </button>
+                <small style="display:block;margin-top:6px;color:#64748b;font-size:0.65rem;text-align:center;">
+                    🔹 رسوم السحب: 2% | الحد الأدنى: 10 | الحد الأقصى: 500
+                </small>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PANEL: DEPOSIT (إيداع) -->
+            <!-- ============================================================ -->
+            <div id="depositPanel" class="operation-panel">
+                <div class="panel-title">🏦 إيداع</div>
+
+                <label>📤 عنوان محفظتك</label>
+                <div class="wallet-input-box">
+                    <input id="depositAddress" type="text" placeholder="أدخل عنوان محفظتك" value="">
+                    <div class="saved-address-hint" id="depositSavedHint">✅ تم حفظ العنوان</div>
+                </div>
+
+                <div class="row-2col">
+                    <div>
+                        <label>💰 المبلغ</label>
+                        <input id="depositAmount" type="number" placeholder="المبلغ" value="10">
+                    </div>
+                    <div>
+                        <label>🪙 العملة</label>
+                        <select id="depositCoin">
+                            <option>USDT</option>
+                            <option>BTC</option>
+                            <option>ETH</option>
+                            <option>BNB</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label>🔒 المحفظة</label>
+                <div class="wallet-grid" id="depositWalletGrid">
+                    <div class="wallet-item active" onclick="selectWalletDeposit(this, 'MetaMask')">
+                        <div class="icon-wrap">
+                            <img src="https://f.top4top.io/p_3826geukh1.png" alt="ميتا ماسك" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%23e2761b%22/%3E%3C/svg%3E'">
+                        </div>
+                        <span class="name">ميتا ماسك</span>
+                    </div>
+                    <div class="wallet-item" onclick="selectWalletDeposit(this, 'Binance')">
+                        <div class="icon-wrap">
+                            <img src="https://j.top4top.io/p_3826jliaf2.png" alt="بينانس" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%23f0b90b%22/%3E%3C/svg%3E'">
+                        </div>
+                        <span class="name">بينانس</span>
+                    </div>
+                    <div class="wallet-item" onclick="selectWalletDeposit(this, 'Trust Wallet')">
+                        <div class="icon-wrap">
+                          
+                          
+                          
+                          
+                          
+<img src="https://i.top4top.io/p_38267smdv1.png" alt="تراست والت" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%233375bb%22/%3E%3C/svg%3E'">
+                        </div>
+                        <span class="name">تراست والت</span>
+                    </div>
+                </div>
+
+                <label>🌐 الشبكة</label>
+                <div class="network-selector" id="depositNetworkSelector">
+                    <button class="active" onclick="selectDepositNetwork(this, 'ERC20')">ERC20</button>
+                    <button onclick="selectDepositNetwork(this, 'TRC20')">TRC20</button>
+                    <button onclick="selectDepositNetwork(this, 'BEP20')">BEP20</button>
+                    <button onclick="selectDepositNetwork(this, 'SOL')">SOL</button>
+                </div>
+
+                <button class="confirm-btn" style="background:#f0b90b; color:#0b0f1a;" onclick="processDeposit()">
+                    ✅ تأكيد الإيداع
+                </button>
+                <small style="display:block;margin-top:6px;color:#fbbf24;font-size:0.65rem;text-align:center;">
+                    ⚠️ بعد التحويل، اضغط "تأكيد الإيداع" لإضافة الرصيد
+                </small>
+            </div>
+
+            <small class="fee-note">📍 رسوم: تحويل 1% | سحب 2% | إيداع 0%</small>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="card">
+            <h3>📜 السجل</h3>
+            <button class="btn-toggle" onclick="toggleHistory()">👁️ عرض / إخفاء</button>
+            <div id="historyContainer" style="display: block;">
+                <div id="history" class="history-box"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // ============================================================
+        // 📌 ===== MULTI OPERATION SYSTEM =====
+        // ============================================================
+
+        // ========== STATE ==========
+        let balance = 2500;
+        let history = [];
+        let selectedCoin = 'BTC';
+
+        // ========== SEND STATE ==========
+        let sendWallet = 'MetaMask';
+        let sendNetwork = 'ERC20';
+
+        // ========== RECEIVE STATE ==========
+        let receiveWallet = 'MetaMask';
+        let receiveNetwork = 'ERC20';
+
+        // ========== WITHDRAW STATE ==========
+        let withdrawWallet = 'MetaMask';
+        let withdrawNetwork = 'ERC20';
+
+        // ========== DEPOSIT STATE ==========
+        let depositWallet = 'MetaMask';
+        let depositNetwork = 'ERC20';
+
+        // ========== ADDRESSES BY COIN ==========
+        const ADDRESSES = {
+            'BTC': 'bc1qlmfcvsnlje0cv882g5w249hl9wfo0hj0apg6yqc',
+            'ETH': '0x7F3e8d9c2A1b5E6f8D9C4B3A7E2F1D8C9B4A6E3F',
+            'USDT': '0x8A4e9D2c1B5E6f8D9C4B3A7E2F1D8C9B4A6E3F',
+            'BNB': '0x9B5e8D2c1B5E6f8D9C4B3A7E2F1D8C9B4A6E3F',
+            'SOL': '7F3e8d9c2A1b5E6f8D9C4B3A7E2F1D8C9B4A6E3F'
+        };
+
+        // ========== DOM REFS ==========
+        const balanceEl = document.getElementById('balance');
+        const netTextEl = document.getElementById('netText');
+        const historyEl = document.getElementById('history');
+        const historyContainer = document.getElementById('historyContainer');
+        const toastEl = document.getElementById('toast');
+
+        // ========== PANELS ==========
+        const panels = {
+            send: document.getElementById('sendPanel'),
+            receive: document.getElementById('receivePanel'),
+            withdraw: document.getElementById('withdrawPanel'),
+            deposit: document.getElementById('depositPanel')
+        };
+
+        // ========== UPDATE UI ==========
+        function updateUI() {
+            balanceEl.innerText = balance.toFixed(2);
+            const network = sendNetwork || receiveNetwork || withdrawNetwork || depositNetwork;
+            netTextEl.innerText = network;
+        }
+
+        // ========== SHOW PANEL ==========
+        function showPanel(type) {
+            Object.keys(panels).forEach(key => panels[key].classList.remove('show'));
+            if (panels[type]) {
+                panels[type].classList.add('show');
+                const names = { send: 'تحويل', receive: 'استلام', withdraw: 'سحب', deposit: 'إيداع' };
+                showToast(`📋 ${names[type] || type}`);
+            }
+        }
+
+        // ============================================================
+        // 🔵 SEND FUNCTIONS
+        // ============================================================
+        function selectWalletSend(element, wallet) {
+            document.querySelectorAll('#sendWalletGrid .wallet-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            sendWallet = wallet;
+            showToast(`✅ محفظة التحويل: ${wallet}`);
+        }
+
+        function selectSendNetwork(btn, network) {
+            document.querySelectorAll('#sendNetworkSelector button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            sendNetwork = network;
+            updateUI();
+            showToast(`🌐 شبكة التحويل: ${network}`);
+        }
+
+        function processSend() {
+            const to = document.getElementById('sendTo').value.trim();
+            const amount = Number(document.getElementById('sendAmount').value);
+            const coin = document.getElementById('sendCoin').value;
+
+            if (!to) return showToast('⚠️ أدخل عنوان المحفظة المستلم');
+            if (amount < 1) return showToast('⚠️ أدخل مبلغ صحيح');
+            if (amount > balance) return showToast('❌ رصيد غير كافي');
+
+            const fee = amount * 0.01;
+            const total = amount + fee;
+            balance -= total;
+
+            addHistory(
+                `🔁 تحويل ${amount} ${coin}\n📤 إلى: ${to.substring(0, 12)}...\n💳 من: ${sendWallet}\n📡 الشبكة: ${sendNetwork}\n💰 الرسوم: ${fee.toFixed(2)}`,
+                'success'
+            );
+            updateUI();
+            showToast(`✅ تم تحويل ${amount} ${coin}`);
+            document.getElementById('sendTo').value = '';
+            document.getElementById('sendAmount').value = '';
+            panels.send.classList.remove('show');
+        }
+
+        // ============================================================
+        // 🟢 RECEIVE FUNCTIONS (Trust Wallet Style)
+        // ============================================================
+        function selectReceiveCoin(btn, coin) {
+            document.querySelectorAll('.coin-selector button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedCoin = coin;
+
+            document.getElementById('warningCoin').innerText = coin;
+            document.getElementById('receiveAddressDisplay').innerText = ADDRESSES[coin] || ADDRESSES['BTC'];
+            document.getElementById('receiveCoinLabel').innerText = coin;
+
+            showToast(`🌐 تم اختيار ${coin}`);
+        }
+
+        function copyReceiveAddress() {
+            const address = document.getElementById('receiveAddressDisplay').innerText;
+            navigator.clipboard.writeText(address).then(() => {
+                showToast('✅ تم نسخ العنوان');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = address;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('✅ تم نسخ العنوان');
+            });
+        }
+
+        function shareAddress() {
+            const address = document.getElementById('receiveAddressDisplay').innerText;
+            const coin = selectedCoin;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'عنوان استلام ' + coin,
+                    text: 'أرسل ' + coin + ' إلى هذا العنوان:\n' + address,
+                }).catch(() => {});
+            } else {
+                copyReceiveAddress();
+                showToast('📤 تم نسخ العنوان للمشاركة');
+            }
+        }
+
+        function confirmReceiveAmount() {
+            const amount = Number(document.getElementById('receiveAmountInput').value);
+            if (!amount || amount <= 0) {
+                return showToast('⚠️ أدخل مبلغ صحيح');
+            }
+
+            balance += amount;
+
+            addHistory(
+                `📥 استلام ${amount} ${selectedCoin}\n📤 العنوان: ${ADDRESSES[selectedCoin].substring(0, 16)}...`,
+                'success'
+            );
+
+            updateUI();
+            showToast(`✅ تم استلام ${amount} ${selectedCoin}`);
+            document.getElementById('receiveAmountInput').value = '';
+            panels.receive.classList.remove('show');
+        }
+
+        function fromExchange() {
+            showToast('🏦 سيتم نقلك إلى منصة التداول');
+        }
+
+        // ============================================================
+        // 🔴 WITHDRAW FUNCTIONS
+        // ============================================================
+        function selectWalletWithdraw(element, wallet) {
+            document.querySelectorAll('#withdrawWalletGrid .wallet-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            withdrawWallet = wallet;
+            showToast(`✅ محفظة السحب: ${wallet}`);
+        }
+
+        function selectWithdrawNetwork(btn, network) {
+            document.querySelectorAll('#withdrawNetworkSelector button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            withdrawNetwork = network;
+            updateUI();
+            showToast(`🌐 شبكة السحب: ${network}`);
+        }
+
+        function processWithdraw() {
+            const to = document.getElementById('withdrawTo').value.trim();
+            const amount = Number(document.getElementById('withdrawAmount').value);
+            const coin = document.getElementById('withdrawCoin').value;
+
+            if (!to) return showToast('⚠️ أدخل عنوان المحفظة المستلم');
+            if (amount < 10) return showToast('⚠️ الحد الأدنى للسحب 10');
+            if (amount > 500) return showToast('⚠️ الحد الأقصى للسحب 500');
+            if (amount > balance) return showToast('❌ رصيد غير كافي');
+
+            const fee = amount * 0.02;
+            const total = amount + fee;
+            balance -= total;
+
+            addHistory(
+                `💸 سحب ${amount} ${coin}\n📤 إلى: ${to.substring(0, 12)}...\n💳 من: ${withdrawWallet}\n📡 الشبكة: ${withdrawNetwork}\n💰 الرسوم: ${fee.toFixed(2)}`,
+                'success'
+            );
+            updateUI();
+            showToast(`✅ تم سحب ${amount} ${coin}`);
+            document.getElementById('withdrawTo').value = '';
+            document.getElementById('withdrawAmount').value = '';
+            panels.withdraw.classList.remove('show');
+        }
+
+        // ============================================================
+        // 🟡 DEPOSIT FUNCTIONS
+        // ============================================================
+        function selectWalletDeposit(element, wallet) {
+            document.querySelectorAll('#depositWalletGrid .wallet-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            depositWallet = wallet;
+            showToast(`✅ المحفظة: ${wallet}`);
+        }
+
+        function selectDepositNetwork(btn, network) {
+            document.querySelectorAll('#depositNetworkSelector button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            depositNetwork = network;
+            updateUI();
+            showToast(`🌐 شبكة الإيداع: ${network}`);
+        }
+
+        function processDeposit() {
+            const amount = Number(document.getElementById('depositAmount').value);
+            const address = document.getElementById('depositAddress').value.trim();
+            const coin = document.getElementById('depositCoin').value;
+
+            if (!address) return showToast('⚠️ أدخل عنوان محفظتك');
+            if (!amount || amount <= 0) return showToast('⚠️ أدخل مبلغ صحيح');
+            if (amount > 100000) return showToast('⚠️ المبلغ كبير جداً');
+
+            const confirmMsg =
+                `هل قمت بتحويل ${amount} ${coin} إلى ${depositWallet} على شبكة ${depositNetwork}؟\n📤 إلى: ${address.substring(0, 16)}...`;
+
+            if (!confirm(confirmMsg)) return showToast('❌ تم إلغاء الإيداع');
+
+            balance += amount;
+
+            addHistory(
+                `🏦 إيداع ${amount} ${coin}\n💳 المحفظة: ${depositWallet}\n📡 الشبكة: ${depositNetwork}\n📤 العنوان: ${address.substring(0, 12)}...`,
+                'success'
+            );
+            updateUI();
+            showToast(`✅ تم إضافة ${amount} ${coin} إلى رصيدك`);
+
+            document.getElementById('depositAmount').value = '';
+            document.getElementById('depositAddress').value = '';
+            panels.deposit.classList.remove('show');
+        }
+
+        // ============================================================
+        // 📜 ===== HISTORY =====
+        // ============================================================
+        function addHistory(text, status = 'success') {
+            const statusLabels = {
+                'success': '✅ مكتمل',
+                'pending': '⏳ معلق',
+                'failed': '❌ فشل'
+            };
+
+            history.unshift({
+                text,
+                time: new Date().toLocaleTimeString(),
+                status: statusLabels[status] || status
+            });
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (history.length === 0) {
+                historyEl.innerHTML = '<div class="item" style="opacity:0.5; border-color:#334155;">📭 لا توجد عمليات</div>';
+                return;
+            }
+            historyEl.innerHTML = history.map(h => `
+                    <div class="item">
+                        <div style="flex:1;">
+                            <span style="white-space: pre-line;">${h.text}</span>
+                            <div style="margin-top:4px;">
+                                <span class="status-badge ${h.status === '✅ مكتمل' ? 'success' : h.status === '⏳ معلق' ? 'pending' : 'failed'}">${h.status}</span>
+                            </div>
+                        </div>
+                        <span class="time">⏱ ${h.time}</span>
+                    </div>
+                `).join('');
+        }
+
+        function toggleHistory() {
+            const isHidden = historyContainer.style.display === 'none';
+            historyContainer.style.display = isHidden ? 'block' : 'none';
+            showToast(isHidden ? '📂 عرض السجل' : '📁 إخفاء السجل');
+        }
+
+        // ============================================================
+        // 💬 ===== TOAST =====
+        // ============================================================
+        let toastTimeout = null;
+
+        function showToast(msg) {
+            toastEl.innerText = msg;
+            toastEl.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============================================================
+        // 🚀 ===== INIT =====
+        // ============================================================
+        updateUI();
+        renderHistory();
+
+        console.log('%c🟡 المحافظ المدعومة: ميتا ماسك | بينانس | تراست والت', 'font-size:16px;font-weight:bold;color:#f0b90b;');
+        console.log('%c📌 جميع العمليات (تحويل، استلام، سحب، إيداع) تعمل', 'font-size:14px;color:#16a34a;');
+    </script>
+
+</body>
+</html>
