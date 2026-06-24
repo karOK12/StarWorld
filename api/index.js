@@ -1,13 +1,3 @@
-const express = require("express");
-const cors = require("cors");
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.json({ message: "API running 🚀" });
-});
-
-module.exports = app;
+module.exports = (req, res) => {
+  res.status(200).json({ message: "API running 🚀" });
+};
