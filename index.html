@@ -118,7 +118,7 @@ max-width:900px;
 
 .rate{
   font-size:13px;
-  color:#a78bfa;
+  color:#00ff88;
 }
 
 .adBtn{
@@ -222,7 +222,7 @@ function mine(){
   })
   .then(res => res.json())
   .then(data => {
-    if(data.balance !== undefined){
+   if(typeof data.balance === "number"){
       coins = data.balance;
     }
   })
