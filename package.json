@@ -20,8 +20,10 @@
   },
   "homepage": "https://github.com/karOK12/StarWorld#readme",
   "dependencies": {
+    "binance-api-node": "^0.13.10",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
+    "ethers": "^6.17.0",
     "express": "^5.2.1",
     "mongoose": "^9.7.2",
     "pg": "^8.22.0",

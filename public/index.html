@@ -185,6 +185,8 @@ let coins = 0;
 let ratePerSec = 0.01;
 let startTime = 0;
 
+let userEmail = localStorage.getItem("email") || "guest";
+
 const circle = document.querySelector(".progress-bar");
 const radius = 70;
 const circumference = 2 * Math.PI * radius;
@@ -192,6 +194,7 @@ const circumference = 2 * Math.PI * radius;
 circle.style.strokeDasharray = circumference;
 circle.style.strokeDashoffset = circumference;
 
+// ▶️ تشغيل التعدين
 function startMining(){
   if(started) return;
 
@@ -200,12 +203,37 @@ function startMining(){
 
   document.getElementById("startBtn").innerText = "MINING ACTIVE";
   document.getElementById("startBtn").disabled = true;
+
+  mine(); // أول تشغيل
 }
 
+// 💰 طلب التعدين من السيرفر
+function mine(){
+  if(!started) return;
+
+  fetch("/mine", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: userEmail,
+      seconds: 1
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.balance !== undefined){
+      coins = data.balance;
+    }
+  })
+  .catch(err => console.log("Mine error:", err));
+}
+
+// 🎬 إعلان
 function openAd(){
   window.open("https://example.com", "_blank");
 }
 
+// ⏱️ وقت
 function formatTime(sec){
   let h = String(Math.floor(sec/3600)).padStart(2,'0');
   let m = String(Math.floor(sec/60)%60).padStart(2,'0');
@@ -213,12 +241,13 @@ function formatTime(sec){
   return `${h}:${m}:${s}`;
 }
 
+// 🔁 loop الرئيسي
 setInterval(() => {
 
   let elapsed = started ? (Date.now() - startTime)/1000 : 0;
 
   if(started){
-    coins += ratePerSec;
+    mine(); // تشغيل التعدين الحقيقي
   }
 
   document.getElementById("timer").innerText = formatTime(elapsed);
@@ -230,10 +259,8 @@ setInterval(() => {
     circumference - Math.min(elapsed / 600, 1) * circumference;
 
 }, 1000);
-</script>
 
-<!-- ✅ فتح صفحة المحفظة -->
-<script>
+// 💼 فتح المحفظة
 document.addEventListener("DOMContentLoaded", () => {
   const walletIcon = document.querySelector(".top-icons i");
 

@@ -587,7 +587,33 @@
                     <h1 id="balance">2500.00</h1>
                 </div>
                 <div>
-                    <span id="netText">USDT</span>
+                  
+                  
+                   <button onclick="connectWallet()" style="
+    background:#1e293b;
+    border:1px solid #334155;
+    padding:6px 12px;
+    border-radius:20px;
+    color:#f0b90b;
+    font-size:0.7rem;
+    cursor:pointer;
+">
+    🔗 ربط المحفظة
+</button>
+
+<div id="walletAddressMini" style="
+    margin-top:6px;
+    font-size:0.6rem;
+    color:#16a34a;
+    display:none;
+    text-align:center;
+">
+    لم يتم الربط
+</div>
+                   
+               
+                 
+                 </span>
                 </div>
             </div>
             <div class="label-small">🔒 محفظة نشطة</div>
@@ -1131,6 +1157,43 @@
         function fromExchange() {
             showToast('🏦 سيتم نقلك إلى منصة التداول');
         }
+        
+        
+        
+        
+        
+       // ===============================
+// 🌐 WALLET CONNECT
+// ===============================
+let walletAddress = null;
+
+async function connectWallet() {
+    if (window.ethereum) {
+        try {
+            const accounts = await window.ethereum.request({
+                method: "eth_requestAccounts"
+            });
+
+            walletAddress = accounts[0];
+
+            document.getElementById("walletAddressMini").style.display = "block";
+            document.getElementById("walletAddressMini").innerText =
+                "✅ " + walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4);
+
+            showToast("✅ تم ربط المحفظة بنجاح");
+
+        } catch (err) {
+            console.log(err);
+            showToast("❌ تم رفض الربط");
+        }
+    } else {
+        showToast("⚠️ MetaMask غير مثبتة");
+    }
+} 
+        
+        
+        
+        
 
         // ============================================================
         // 🔴 WITHDRAW FUNCTIONS

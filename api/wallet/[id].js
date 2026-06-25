@@ -7,20 +7,18 @@ const pool = new Pool({
 
 module.exports = async (req, res) => {
   try {
+    const { id } = req.query;
 
     const result = await pool.query(
-      "SELECT NOW()"
+      "SELECT * FROM wallets WHERE user_id = $1",
+      [id]
     );
 
-    res.status(200).json({
-      success: true,
-      db: result.rows[0]
-    });
+    res.status(200).json(result.rows);
 
-  } catch(err) {
+  } catch (err) {
 
     res.status(500).json({
-      success: false,
       error: err.message
     });
 
