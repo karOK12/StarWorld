@@ -579,45 +579,69 @@
 
     <div class="app">
 
-        <!-- BALANCE -->
-        <div class="card">
-            <div class="balance-wrap">
-                <div>
-                    <h3 style="margin-bottom: 2px;">💰 الرصيد</h3>
-                    <h1 id="balance">2500.00</h1>
-                </div>
-                <div>
-                  
-                  
-                   <button onclick="connectWallet()" style="
-    background:#1e293b;
-    border:1px solid #334155;
-    padding:6px 12px;
-    border-radius:20px;
-    color:#f0b90b;
-    font-size:0.7rem;
-    cursor:pointer;
+<!-- BALANCE -->
+<div class="card">
+    <div class="balance-wrap">
+
+        <div>
+            <h3 style="margin-bottom:2px;">💰 الرصيد</h3>
+            <h1 id="balance">2500.00</h1>
+        </div>
+
+        <div style="
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    min-width:140px;
 ">
-    🔗 ربط المحفظة
-</button>
+
+            <button onclick="connectWallet()" style="
+                background:#1e293b;
+                border:1px solid #334155;
+                padding:6px 12px;
+                border-radius:20px;
+                color:#f0b90b;
+                font-size:0.7rem;
+                cursor:pointer;
+            ">
+                🔗 ربط المحفظة
+            </button>
 
 <div id="walletAddressMini" style="
-    margin-top:6px;
-    font-size:0.6rem;
+    font-size:0.65rem;
     color:#16a34a;
     display:none;
     text-align:center;
+    background:#0f172a;
+    border:1px solid #1e293b;
+    padding:4px 10px;
+    border-radius:12px;
+    max-width:160px;
+    word-break:break-all;
 ">
-    لم يتم الربط
-</div>
-                   
-               
-                 
-                 </span>
-                </div>
+                لم يتم الربط
             </div>
-            <div class="label-small">🔒 محفظة نشطة</div>
+
+            <div id="netText" style="
+                margin-top:6px;
+                background:#1e293b;
+                padding:4px 12px;
+                border-radius:20px;
+                color:#cbd5e1;
+                font-size:0.7rem;
+                text-align:center;
+            ">
+                ERC20
+            </div>
+
         </div>
+
+    </div>
+
+    <div class="label-small">🔒 محفظة نشطة</div>
+</div>
 
         <!-- ACTIONS -->
         <div class="card">
@@ -1048,7 +1072,33 @@
             }
         }
 
-        // ============================================================
+async function connectWallet() {
+    if (window.ethereum && window.ethereum.isMetaMask) {
+        try {
+            const accounts = await window.ethereum.request({
+                method: "eth_requestAccounts"
+            });
+
+            walletAddress = accounts[0];
+
+            document.getElementById("walletAddressMini").style.display = "block";
+            document.getElementById("walletAddressMini").innerText =
+                "✅ " + walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4);
+
+            showToast("✅ تم الربط الحقيقي");
+
+        } catch (err) {
+            showToast("❌ المستخدم رفض الربط");
+        }
+
+    } else {
+        showToast("❌ MetaMask غير موجود. افتح الموقع داخل MetaMask أو Chrome");
+    }
+}
+
+
+
+              // ============================================================
         // 🔵 SEND FUNCTIONS
         // ============================================================
         function selectWalletSend(element, wallet) {
@@ -1075,6 +1125,11 @@
             if (amount < 1) return showToast('⚠️ أدخل مبلغ صحيح');
             if (amount > balance) return showToast('❌ رصيد غير كافي');
 
+            // 🔥 شرطك الجديد
+            if (sendNetwork === "ERC20" && coin === "ETH") {
+                return showToast("❌ ETH لا يعمل على شبكة ERC20");
+            }
+
             const fee = amount * 0.01;
             const total = amount + fee;
             balance -= total;
@@ -1083,8 +1138,10 @@
                 `🔁 تحويل ${amount} ${coin}\n📤 إلى: ${to.substring(0, 12)}...\n💳 من: ${sendWallet}\n📡 الشبكة: ${sendNetwork}\n💰 الرسوم: ${fee.toFixed(2)}`,
                 'success'
             );
+
             updateUI();
             showToast(`✅ تم تحويل ${amount} ${coin}`);
+
             document.getElementById('sendTo').value = '';
             document.getElementById('sendAmount').value = '';
             panels.send.classList.remove('show');
