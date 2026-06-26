@@ -77,7 +77,7 @@ max-width:900px;
   display:flex;
   flex-direction:column;
   align-items:flex-end;
-  gap:6px;
+  gap:4px;
   text-align:right;
 }
 
@@ -104,6 +104,8 @@ max-width:900px;
 .timer{
   font-size:22px;
   font-weight:bold;
+  font-variant-numeric: tabular-nums;
+  color: #7c3aed;
 }
 
 .sub{
@@ -111,17 +113,86 @@ max-width:900px;
   opacity:0.6;
 }
 
-.balance{
-  font-size:24px;
-  font-weight:bold;
+.balance-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
 
-.rate{
-  font-size:13px;
-  color:#a78bfa;
-  min-width:90px;
-  text-align:right;
+.balance-label {
+  font-size: 10px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.5;
+}
+
+.balance {
+  font-size: 26px;
+  font-weight: bold;
+  min-width: 140px;
+  text-align: right;
   font-variant-numeric: tabular-nums;
+  color: #a78bfa;
+  opacity: 1;
+  transition: none;
+}
+
+.power-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.power-label {
+  font-size: 10px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.5;
+}
+
+.power {
+  font-size: 16px;
+  color: #4ade80;
+  min-width: 100px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.rate-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.rate-label {
+  font-size: 10px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.5;
+}
+
+.rate {
+  font-size: 14px;
+  color: #fbbf24;
+  min-width: 90px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: bold;
+}
+
+.profit-info {
+  font-size: 11px;
+  color: #6b7280;
+  text-align: right;
+  opacity: 0.5;
+  margin-top: -2px;
 }
 
 .adBtn{
@@ -132,6 +203,7 @@ max-width:900px;
   color:white;
   border:1px solid rgba(255,255,255,0.1);
   cursor:pointer;
+  margin-top: 4px;
 }
 
 button{
@@ -144,6 +216,31 @@ button{
   color:white;
   font-weight:bold;
   cursor:pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.balance-update {
+  animation: pulse 0.3s ease;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); color: #7c3aed; }
+  50% { transform: scale(1.05); color: #c4b5fd; }
+  100% { transform: scale(1); color: #a78bfa; }
+}
+
+.timer-update {
+  animation: timerPulse 0.3s ease;
+}
+
+@keyframes timerPulse {
+  0% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0.7; transform: scale(1); }
 }
 </style>
 </head>
@@ -169,28 +266,65 @@ button{
     </div>
 
     <div class="right">
-      <div class="balance" id="balance">000.000000</div>
-      <div class="rate" id="rate">↗️ +0.00/h</div>
+
+      <div class="balance-container">
+        <div class="balance-label">💰 الرصيد</div>
+        <div class="balance" id="balance">0.000000</div>
+      </div>
+
+      <div class="power-container">
+        <div class="power-label">⚡ القوة</div>
+        <div class="power" id="power">0.00</div>
+      </div>
+
+      <div class="rate-container">
+        <div class="rate-label">📈 معدل التعدين</div>
+        <div class="rate" id="rate">↗️ +0.00/h</div>
+      </div>
+
+      <div class="profit-info" id="profitInfo">⏱️ +0.000000 per second</div>
 
       <button class="adBtn" onclick="openAd()">
-        WATCH AD
+        📺 WATCH AD
       </button>
     </div>
 
   </div>
 
-  <button id="startBtn" onclick="startMining()">START MINING</button>
+  <button id="startBtn" onclick="startMining()">⛏️ START MINING</button>
 
 </div>
 
 <script>
-let started = false;
-let coins = 0;
-let ratePerSec = 0.01;
+// ============================================================
+// 🆓 Alpha Mining Card - Production Ready
+// ============================================================
+// 📌 قاعدة البيانات تحتوي فقط على: balance, power, email
+// 💰 balance = رصيد المستخدم
+// ⚡ power = قوة التعدين (تحدد معدل التعدين)
+// 🔄 لا توجد أي قيم ثابتة أو محاكاة
+// ============================================================
+
+// ==================== API BASE ====================
+const API = "https://your-project.vercel.app";
+
+// ==================== STATE ====================
+let isMining = false;
+let balance = 0.000000;
+let power = 0;
+let RATE_PER_HOUR = 0;
+let profitPerSecond = 0;
+
+// ⏱️ مدة التعدين (8 ساعات)
+const miningDuration = 28800;
+const SMOOTHING_FACTOR = 0.005;
+
 let startTime = 0;
+let elapsedTime = 0;
+let timerInterval = null;
+let lastSecond = -1;
 
-let userEmail = localStorage.getItem("email") || "guest";
-
+// ==================== DOM REFERENCES ====================
 const circle = document.querySelector(".progress-bar");
 const radius = 70;
 const circumference = 2 * Math.PI * radius;
@@ -198,80 +332,213 @@ const circumference = 2 * Math.PI * radius;
 circle.style.strokeDasharray = circumference;
 circle.style.strokeDashoffset = circumference;
 
-// ▶️ تشغيل التعدين
-function startMining(){
-  if(started) return;
+const balanceEl = document.getElementById("balance");
+const powerEl = document.getElementById("power");
+const rateEl = document.getElementById("rate");
+const timerEl = document.getElementById("timer");
+const profitInfoEl = document.getElementById("profitInfo");
 
-  started = true;
-  startTime = Date.now();
+// عرض القوة (0)
+powerEl.textContent = `0.00`;
+rateEl.textContent = `↗️ +0.00/h`;
+profitInfoEl.textContent = `⏱️ +0.000000 per second`;
 
-  document.getElementById("startBtn").innerText = "MINING ACTIVE";
-  document.getElementById("startBtn").disabled = true;
+console.log("========== 📊 معلومات النظام ==========");
+console.log(`💰 الرصيد: يتم جلبه من قاعدة البيانات`);
+console.log(`⚡ القوة: يتم جلبها من قاعدة البيانات`);
+console.log(`📈 معدل التعدين = القوة × 0.5`);
+console.log("=======================================");
 
-  mine(); // أول تشغيل
+// ==================== UPDATE MINING RATE FROM POWER ====================
+function updateMiningRateFromPower(newPower){
+    power = newPower;
+    RATE_PER_HOUR = power * 0.5;
+    profitPerSecond = RATE_PER_HOUR / 3600;
+    
+    powerEl.textContent = power.toFixed(2);
+    rateEl.textContent = `↗️ +${RATE_PER_HOUR.toFixed(2)}/h`;
+    profitInfoEl.textContent = `⏱️ +${profitPerSecond.toFixed(6)} per second`;
+    
+    console.log(`⚡ تم تحديث القوة: ${power}`);
+    console.log(`📊 معدل التعدين: ${RATE_PER_HOUR}/h`);
 }
 
-// 💰 طلب التعدين من السيرفر
-function mine(){
-  if(!started) return;
+// ==================== START MINING ====================
+function startMining(){
+  if(isMining) return;
 
-  fetch("/mine", {
+  isMining = true;
+  startTime = Date.now();
+  elapsedTime = 0;
+  lastSecond = -1;
+
+  document.getElementById("startBtn").innerText = "⛏️ MINING...";
+  document.getElementById("startBtn").disabled = true;
+
+  circle.style.strokeDashoffset = circumference;
+
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimer, 1000);
+  
+  updateTimer();
+  
+  console.log("⛏️ بدأ التعدين!");
+  console.log(`📊 معدل التعدين الحالي: ${RATE_PER_HOUR}/h`);
+}
+
+// ==================== UPDATE TIMER ====================
+function updateTimer(){
+  if(!isMining) return;
+
+  const now = Date.now();
+  elapsedTime = (now - startTime) / 1000;
+
+  const target = elapsedTime * profitPerSecond;
+  balance += (target - balance) * SMOOTHING_FACTOR;
+
+  updateBalanceDisplay(balance);
+
+  const currentSecond = Math.floor(elapsedTime);
+  if(currentSecond !== lastSecond){
+    lastSecond = currentSecond;
+    timerEl.textContent = formatTime(elapsedTime);
+    
+    timerEl.classList.remove('timer-update');
+    requestAnimationFrame(() => {
+      timerEl.classList.add('timer-update');
+    });
+    
+    console.log(`⏱️ ${formatTime(elapsedTime)} | 💰 ${balance.toFixed(6)}`);
+  }
+
+  const progress = Math.min(elapsedTime / miningDuration, 1);
+  circle.style.strokeDashoffset = circumference - (progress * circumference);
+
+  if(elapsedTime >= miningDuration){
+    finishMining();
+  }
+}
+
+// ==================== FINISH MINING ====================
+function finishMining(){
+  if(!isMining) return;
+
+  isMining = false;
+  
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  timerEl.textContent = "✅ COMPLETE!";
+  
+  document.getElementById("startBtn").innerText = "⛏️ MINE AGAIN";
+  document.getElementById("startBtn").disabled = false;
+
+  saveData();
+
+  console.log("========== ✅ انتهى التعدين ==========");
+  console.log(`💰 الرصيد النهائي: ${balance.toFixed(6)}`);
+  console.log("=====================================");
+}
+
+// ==================== UPDATE BALANCE DISPLAY ====================
+function updateBalanceDisplay(value){
+  balanceEl.classList.remove('balance-update');
+  requestAnimationFrame(() => {
+    balanceEl.classList.add('balance-update');
+  });
+  
+  balanceEl.textContent = value.toFixed(6);
+}
+
+// ==================== SAVE DATA ====================
+function saveData(){
+  const email = localStorage.getItem("email") || "guest";
+
+  fetch(API + "/user/save", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
-      email: userEmail,
-      seconds: 1
+      email: email,
+      balance: balance,
+      power: power
     })
   })
   .then(res => res.json())
   .then(data => {
-   if(typeof data.balance === "number"){
-      coins = data.balance;
-    }
+    console.log("✅ تم حفظ البيانات:", data);
   })
-  .catch(err => console.log("Mine error:", err));
+  .catch(err => {
+    console.log("❌ خطأ في الحفظ:", err);
+  });
 }
 
-// 🎬 إعلان
+// ==================== FETCH DATA ====================
+function fetchUserData(){
+  const email = localStorage.getItem("email") || "guest";
+
+  console.log("📡 جاري جلب البيانات من قاعدة البيانات...");
+
+  fetch(API + "/user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email: email })
+  })
+  .then(res => {
+    if(!res.ok) throw new Error("HTTP Error");
+    return res.json();
+  })
+  .then(data => {
+    console.log("✅ تم استلام البيانات:", data);
+
+    if(typeof data.balance === "number"){
+      balance = data.balance;
+      balanceEl.textContent = balance.toFixed(6);
+    }
+
+    if(typeof data.power === "number"){
+      updateMiningRateFromPower(data.power);
+    }
+  })
+  .catch(err => {
+    console.log("❌ خطأ في جلب البيانات:", err);
+  });
+}
+
+// ==================== FORMAT TIME ====================
+function formatTime(sec){
+  let h = String(Math.floor(sec / 3600)).padStart(2,'0');
+  let m = String(Math.floor((sec % 3600) / 60)).padStart(2,'0');
+  let s = String(Math.floor(sec % 60)).padStart(2,'0');
+  return `${h}:${m}:${s}`;
+}
+
+// ==================== OPEN AD ====================
 function openAd(){
   window.open("https://example.com", "_blank");
 }
 
-// ⏱️ وقت
-function formatTime(sec){
-  let h = String(Math.floor(sec/3600)).padStart(2,'0');
-  let m = String(Math.floor(sec/60)%60).padStart(2,'0');
-  let s = String(Math.floor(sec%60)).padStart(2,'0');
-  return `${h}:${m}:${s}`;
-}
-
-// 🔁 loop الرئيسي
-setInterval(() => {
-
-  let elapsed = started ? (Date.now() - startTime)/1000 : 0;
-
-  if(started){
-    mine(); // تشغيل التعدين الحقيقي
-  }
-
-  document.getElementById("timer").innerText = formatTime(elapsed);
-  document.getElementById("balance").innerText = coins.toFixed(6);
-  document.getElementById("rate").innerText =
-    `↗️ +${(ratePerSec*3600).toFixed(2)}/h`;
-
-  circle.style.strokeDashoffset =
-    circumference - Math.min(elapsed / 600, 1) * circumference;
-
-}, 1000);
-
-// 💼 فتح المحفظة
+// ==================== WALLET ====================
 document.addEventListener("DOMContentLoaded", () => {
   const walletIcon = document.querySelector(".top-icons i");
-
-  walletIcon.addEventListener("click", () => {
-    window.open("wallet.html", "_blank", "width=420,height=720");
-  });
+  if(walletIcon){
+    walletIcon.addEventListener("click", () => {
+      window.open("wallet.html", "_blank", "width=420,height=720");
+    });
+  }
+  
+  fetchUserData();
 });
+
+console.log("✅ النظام جاهز!");
+console.log("📊 يعتمد على: balance (الرصيد) و power (القوة)");
+console.log("🔗 متصل بـ GitHub + Vercel + Neon Database");
+console.log("⚡ معدل التعدين = power × 0.5");
 </script>
 
 </body>

@@ -11,4 +11,7 @@ router.use("/withdrawal", require("./withdrawalRoutes"));
 router.use("/transactions", require("./transactionRoutes"));
 router.use("/mining", require("./miningRoutes"));
 
+// 👇 هذا اللي ضفناه
+router.use("/user", require("./userRoutes"));
+
 module.exports = router;
