@@ -39,14 +39,12 @@ app.use((req, res, next) => {
 // ===============================
 // 🏠 Home Page
 // ===============================
+
+// تقديم جميع الملفات الموجودة بجانب server.js
+app.use(express.static(__dirname));
+
 app.get("/", (req, res) => {
-  fs.readFile(path.join(__dirname, "client/public/index.html"), (err, data) => {
-    if (err) {
-      return res.status(500).send("Error loading page");
-    }
-    res.setHeader("Content-Type", "text/html");
-    res.send(data);
-  });
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 // ===============================
